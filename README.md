@@ -2,7 +2,7 @@
 
 ## Endpoints
 
-* acessivel sem login
+- '*' acessivel sem login
 
 POST *api/auth/login (email, password)
 POST api/auth/logout
