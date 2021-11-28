@@ -15,9 +15,57 @@ class AuthController extends Controller
         $this->middleware("auth:api", [
             "except" => [
                 "login",
-                "create, 
-                unauthorized"
+                "create", 
+                "unauthorized"
             ]
+        ]);
+    }
+
+    public function unauthorized()
+    {
+        return response()->json(["error" => "Não autorizado"], 401);
+    }
+
+    public function login(Request $request)
+    {
+        $data = $request->all();
+
+        $validator = Validator::make($data, [
+            'email' => ['required', 'email', 'max:100'],
+            'password' => ['required', 'string', 'min:4', 'max:100'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                "message" => $validator->errors(), 
+                "error" => true
+            ], 400);
+        }
+
+        $token = Auth::attempt([
+            'email' => $data['email'],
+            'password' => $data['password']
+        ]);
+
+        if (!$token) {
+            return response()->json(["error" => "Login e/ou senha incorretos"], 400);
+        } else {
+            return response()->json(["error" => false, "token" => $token]);
+        }
+    }
+
+    public function logout()
+    {
+        Auth::logout();
+        
+        return response()->json(["error" => false]);
+    }
+
+    public function refresh()
+    {
+        return response()->json([
+            "error" => false,
+            "token" => Auth::refresh(),
         ]);
     }
 
