@@ -10,7 +10,7 @@ use PDOException;
 
 class AuthController extends Controller
 {
-    public function __contruct()
+    public function __construct()
     {
         $this->middleware("auth:api", [
             "except" => [

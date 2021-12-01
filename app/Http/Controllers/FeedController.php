@@ -9,7 +9,7 @@ class FeedController extends Controller
 {
     private $loggedUser;
     
-    public function __contruct()
+    public function __construct()
     {
         $this->middleware("auth:api");
 
