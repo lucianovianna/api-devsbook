@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Image;
 
 class UserController extends Controller
 {
@@ -80,6 +81,42 @@ class UserController extends Controller
         return response()->json([
             "error" => false,
             "messages" => $msg,
+        ]);
+    }
+
+    public function updateAvatar(Request $request)
+    {
+        $data = $request->all();
+
+        $validator = Validator::make($data, [
+            "avatar" => ["required", "mimes:jpg,jpeg,png"]
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                "messages" => $validator->errors(), 
+                "error" => true,
+            ], 400);
+        }
+
+        $messages = [];
+
+        $filename = md5(time().rand(0,9999)) . "jpg";
+        $destPath = public_path("/media/avatars");
+        
+        $img = Image::make($data["avatar"]->path())
+            ->fit(200, 200)
+            ->save($destPath . "/" . $filename);
+        
+        $user = User::find($this->loggedUser["id"]);
+        $user->avatar = $filename;
+        $user->save();
+
+        $messages["url"] = url("media/avatars/" . $filename);
+
+        return response()->json([
+            "error" => false,
+            "messages" => $messages,
         ]);
     }
 }
