@@ -89,7 +89,7 @@ class UserController extends Controller
         $data = $request->all();
 
         $validator = Validator::make($data, [
-            "avatar" => ["required", "mimes:jpg,jpeg,png"]
+            "avatar" => ["required", "file", "mimes:jpg,jpeg,png"]
         ]);
 
         if ($validator->fails()) {
@@ -101,7 +101,7 @@ class UserController extends Controller
 
         $messages = [];
 
-        $filename = md5(time().rand(0,9999)) . "jpg";
+        $filename = md5(time().rand(0,9999)) . ".jpg";
         $destPath = public_path("/media/avatars");
         
         Image::make($data["avatar"]->path())
@@ -125,7 +125,7 @@ class UserController extends Controller
         $data = $request->all();
 
         $validator = Validator::make($data, [
-            "cover" => ["required", "mimes:jpg,jpeg,png"]
+            "cover" => ["required", "file", "mimes:jpg,jpeg,png"]
         ]);
 
         if ($validator->fails()) {
@@ -137,7 +137,7 @@ class UserController extends Controller
 
         $messages = [];
 
-        $filename = md5(time().rand(0,9999)) . "jpg";
+        $filename = md5(time().rand(0,9999)) . ".jpg";
         $destPath = public_path("/media/covers");
         
         Image::make($data["cover"]->path())
