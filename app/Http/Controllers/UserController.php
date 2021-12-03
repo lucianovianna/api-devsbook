@@ -104,7 +104,7 @@ class UserController extends Controller
         $filename = md5(time().rand(0,9999)) . "jpg";
         $destPath = public_path("/media/avatars");
         
-        $img = Image::make($data["avatar"]->path())
+        Image::make($data["avatar"]->path())
             ->fit(200, 200)
             ->save($destPath . "/" . $filename);
         
@@ -113,6 +113,42 @@ class UserController extends Controller
         $user->save();
 
         $messages["url"] = url("media/avatars/" . $filename);
+
+        return response()->json([
+            "error" => false,
+            "messages" => $messages,
+        ]);
+    }
+
+    public function updateCover(Request $request)
+    {
+        $data = $request->all();
+
+        $validator = Validator::make($data, [
+            "cover" => ["required", "mimes:jpg,jpeg,png"]
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                "messages" => $validator->errors(), 
+                "error" => true,
+            ], 400);
+        }
+
+        $messages = [];
+
+        $filename = md5(time().rand(0,9999)) . "jpg";
+        $destPath = public_path("/media/covers");
+        
+        Image::make($data["cover"]->path())
+            ->fit(850, 310)
+            ->save($destPath . "/" . $filename);
+        
+        $user = User::find($this->loggedUser["id"]);
+        $user->cover = $filename;
+        $user->save();
+
+        $messages["url"] = url("media/covers/" . $filename);
 
         return response()->json([
             "error" => false,
