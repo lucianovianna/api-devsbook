@@ -18,6 +18,7 @@ GET api/feed (page)
 GET api/user/feed (page)
 GET api/user/:id/feed (page)
 POST api/user/:id/follow
+GET api/user/:id/followers
 
 GET api/user
 GET api/user/:id

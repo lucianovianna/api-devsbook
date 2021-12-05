@@ -228,4 +228,39 @@ class UserController extends Controller
 
         return response()->json([$messages]); 
     }
+
+    public function followers($id)
+    {
+        $messages = [
+            "followers" => [],
+            "following" => [],
+        ];
+
+        if (!User::find($id)) {
+            return response()->json(["error" => "Usuário inexistente"], 400);
+        }
+
+        $followers = UserRelation::where("user_to", $id)->get();
+        $following = UserRelation::where("user_from", $id)->get();
+
+        foreach ($followers as $item) {
+            $user = User::find($item["user_from"]);
+            $messages["followers"][] = [
+                "id" => $user["id"],
+                "name" => $user["name"],
+                "avatar" => url("media/avatars/" . $user["avatar"])
+            ];
+        }
+
+        foreach ($following as $item) {
+            $user = User::find($item["user_from"]);
+            $messages["following"][] = [
+                "id" => $user["id"],
+                "name" => $user["name"],
+                "avatar" => url("media/avatars/" . $user["avatar"])
+            ];
+        }
+
+        return response()->json([$messages]);
+    }
 }
