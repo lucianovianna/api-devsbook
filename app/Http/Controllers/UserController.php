@@ -196,4 +196,36 @@ class UserController extends Controller
 
         return response()->json([$messages]);
     }
+
+    public function follow($id)
+    {
+        $messages = [];
+
+        if ($id == $this->loggedUser["id"]) {
+            return response()->json(["error" => "Você não pode seguir a si mesmo"], 400);
+        } else if (!User::find($id)) {
+            return response()->json(["error" => "Usuário inexistente"], 400);
+        }
+
+        $relation = UserRelation::where("user_from", $this->loggedUser["id"])
+            ->where("user_to", $id)
+            ->first();
+
+        if ($relation) {
+            $relation->delete();
+
+            $messages["isFollowing"] = false; 
+        } else {
+            $newRelation = new UserRelation();
+            $newRelation->user_from = $this->loggedUser["id"];
+            $newRelation->user_to = $id;
+            $newRelation->save();
+
+            $messages["isFollowing"] = true; 
+        }
+
+        $messages["followers"] = UserRelation::where("user_to", $id)->count(); 
+
+        return response()->json([$messages]); 
+    }
 }
