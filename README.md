@@ -17,6 +17,8 @@ POST api/user/cover (cover)
 GET api/feed (page)
 GET api/user/feed (page)
 GET api/user/:id/feed (page)
+GET api/user/photos (page)
+GET api/user/:id/photos (page)
 POST api/user/:id/follow
 GET api/user/:id/followers
 
