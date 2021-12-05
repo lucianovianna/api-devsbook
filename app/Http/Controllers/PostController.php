@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use App\Models\PostComment;
 use App\Models\PostLike;
 use App\Models\Post;
 
@@ -49,6 +51,35 @@ class PostController extends Controller
         }
 
         $messages["likeCout"] = PostLike::where("id_post", $id)->count();
+
+        return response()->json([$messages]);
+    }
+
+    public function comment(Request $request, $id)
+    {
+        $messages = [];
+
+        $data = $request->all();
+        $validator = Validator::make($data, [
+            "txt" => ["required", "string"]
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(["messages" => $validator->errors()], 400);
+        }
+
+        if (!Post::find($id)) {
+            return response()->json(["error" => "Post inexistente"], 400);
+        }
+
+        $newComment = new PostComment();
+        $newComment->id_post = $id;
+        $newComment->id_user = $this->loggedUser["id"];
+        $newComment->created_at = date("Y-m-d H:i:s");
+        $newComment->body = $data["txt"];
+        $newComment->save();
+
+        $messages[] = "Comentário enviado com sucesso";
 
         return response()->json([$messages]);
     }
