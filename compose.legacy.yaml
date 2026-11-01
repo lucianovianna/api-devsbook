@@ -1,0 +1,46 @@
+name: devsbook-legacy
+
+services:
+  app:
+    build:
+      context: ./docker/legacy
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    working_dir: /var/www/html
+    environment:
+      COMPOSER_HOME: /tmp/composer
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: devsbook
+      DB_USERNAME: devsbook
+      DB_PASSWORD: devsbook-local
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "127.0.0.1:${LEGACY_APP_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # Laravel 8's reload process drops the database variables supplied by Compose.
+    command: ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000", "--no-reload"]
+
+  postgres:
+    image: postgres:14-bookworm@sha256:a389ed49344afc8f4444efd4eb512965df07aaa6ed84b239b54a23246e9fe347
+    environment:
+      POSTGRES_DB: devsbook
+      POSTGRES_USER: devsbook
+      POSTGRES_PASSWORD: devsbook-local
+    ports:
+      - "127.0.0.1:${LEGACY_DB_PORT:-5433}:5432"
+    volumes:
+      - legacy-postgres:/var/lib/postgresql/data
+      - ./docker/legacy/init-test-database.sql:/docker-entrypoint-initdb.d/01-test-database.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devsbook -d devsbook"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  legacy-postgres:

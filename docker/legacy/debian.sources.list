@@ -1,0 +1,5 @@
+# Snapshot matching the PHP 8.0 image; archived metadata has an expired Valid-Until.
+# Package signatures are still checked by APT.
+deb [check-valid-until=no] https://snapshot.debian.org/archive/debian/20231120T000000Z/ bullseye main
+deb [check-valid-until=no] https://snapshot.debian.org/archive/debian-security/20231120T000000Z/ bullseye-security main
+deb [check-valid-until=no] https://snapshot.debian.org/archive/debian/20231120T000000Z/ bullseye-updates main
