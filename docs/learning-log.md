@@ -275,3 +275,41 @@ Não houve benchmark ou avaliação de ganho de performance.
 ### Próximo passo
 
 Completar Redis, seed de desenvolvimento e CI na Fase 0.
+
+## 2026-11-01 — Ambiente reproduzível e verificações comuns da Fase 0
+
+### Contexto
+
+Faltavam Redis, dados pequenos e verificações automáticas após os upgrades.
+A instalação limpa precisava reproduzir os comandos que a CI executaria.
+
+### Conceitos e decisões
+
+Disponibilidade de um componente não exige mudar os drivers do domínio.
+Redis foi disponibilizado com Predis, enquanto cache/sessão continuam em arquivo
+e fila síncrona. Não houve hipótese de ganho de performance ou benchmark.
+
+O seed usa identificadores estáveis e uma transação, preservando dados já
+existentes. Repetibilidade sequencial não garante segurança concorrente;
+constraints e concorrência continuam nos estudos correspondentes.
+
+A análise estática encontrou diferenças entre metadados e comportamento:
+a biblioteca JWT anota TTL inteiro, mas o adaptador precisa preservar `null`.
+Um stub específico corrige essa informação para PHPStan sem executar código
+nem editar a biblioteca. Também foi explicitado o guard JWT no refresh.
+
+### Evidência e limites
+
+Pint, Larastan/PHPStan nível 5 e 102 testes/602 assertions passaram em cópia
+sem `.env`, `vendor` ou volumes anteriores. A ordem aleatória manteve o
+resultado. O seed foi repetido, login/feed e Redis foram verificados, e os dados
+de desenvolvimento permaneceram após a suíte. O workflow passou no actionlint.
+
+Reproduzir os passos da CI localmente não equivale a observar um run hospedado.
+A primeira execução no GitHub fica pendente da publicação dos arquivos.
+Ver [phase0-environment.md](architecture/phase0-environment.md).
+
+### Próximo passo
+
+Conferir a CI após publicação e combinar o início da Fase 1, com medições
+antes de qualquer otimização.

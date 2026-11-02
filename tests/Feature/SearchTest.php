@@ -23,8 +23,12 @@ class SearchTest extends ApiTestCase
 
     public function test_search_without_matches_returns_an_empty_list()
     {
-        $this->apiJson('GET', '/api/search?txt=NoMatchingName', [],
-            $this->tokenFor(User::factory()->create(['name' => 'Viewer User'])))
+        $this->apiJson(
+            'GET',
+            '/api/search?txt=NoMatchingName',
+            [],
+            $this->tokenFor(User::factory()->create(['name' => 'Viewer User']))
+        )
             ->assertOk()->assertExactJson([['users' => []]]);
     }
 

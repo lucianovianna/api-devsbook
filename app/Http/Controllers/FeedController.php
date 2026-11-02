@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\UserRelation;
 use App\Models\PostLike;
@@ -117,7 +116,9 @@ class FeedController extends Controller
     {
         $messages = [];
 
-        if ($id == false) $id = $this->loggedUser["id"];
+        if ($id == false) {
+            $id = $this->loggedUser["id"];
+        }
 
         $page = intval($request->input("page"));
         $perPage = 2;
@@ -148,7 +149,9 @@ class FeedController extends Controller
     {
         $messages = [];
 
-        if ($id == false) $id = $this->loggedUser["id"];
+        if ($id == false) {
+            $id = $this->loggedUser["id"];
+        }
 
         $page = intval($request->input("page"));
         $perPage = 2;
@@ -162,7 +165,7 @@ class FeedController extends Controller
             ->get();
 
         $total = Post::where("id_user", $id)
-            ->where("type", "photo")    
+            ->where("type", "photo")
             ->count();
         $pageCount = ceil($total / $perPage);
 

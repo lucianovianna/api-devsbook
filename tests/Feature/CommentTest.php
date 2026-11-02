@@ -44,8 +44,12 @@ class CommentTest extends ApiTestCase
 
     public function test_missing_post_cannot_receive_a_comment()
     {
-        $this->apiJson('POST', '/api/post/999999/comment', ['txt' => 'A comment'],
-            $this->tokenFor(User::factory()->create()))
+        $this->apiJson(
+            'POST',
+            '/api/post/999999/comment',
+            ['txt' => 'A comment'],
+            $this->tokenFor(User::factory()->create())
+        )
             ->assertStatus(400)->assertExactJson(['error' => 'Post inexistente']);
         $this->assertDatabaseCount('postcomments', 0);
     }

@@ -3,22 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\User;
 
 class SearchController extends Controller
 {
-    private $loggedUser;
-    
     public function __construct()
     {
         $this->middleware("auth:api");
-        $this->middleware(function ($request, $next) {
-            $this->loggedUser = $request->user();
-
-            return $next($request);
-        });
     }
 
     public function search(Request $request)
@@ -37,7 +29,7 @@ class SearchController extends Controller
         // Busca de usuarios
         $userList = User::where("name", "like", "%".$data["txt"]."%")->get();
 
-        foreach($userList as $userItem) {
+        foreach ($userList as $userItem) {
             $messages["users"][] = [
                 "id" => $userItem["id"],
                 "name" => $userItem["name"],

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\User;
 use PDOException;
+use Tymon\JWTAuth\JWTGuard;
 
 class AuthController extends Controller
 {
@@ -15,7 +16,7 @@ class AuthController extends Controller
         $this->middleware("auth:api", [
             "except" => [
                 "login",
-                "create", 
+                "create",
                 "unauthorized"
             ]
         ]);
@@ -37,7 +38,7 @@ class AuthController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                "message" => $validator->errors(), 
+                "message" => $validator->errors(),
                 "error" => true
             ], 400);
         }
@@ -57,15 +58,18 @@ class AuthController extends Controller
     public function logout()
     {
         Auth::logout();
-        
+
         return response()->json(["error" => false]);
     }
 
     public function refresh()
     {
+        /** @var JWTGuard $guard */
+        $guard = Auth::guard('api');
+
         return response()->json([
             "error" => false,
-            "token" => Auth::refresh(),
+            "token" => $guard->refresh(),
         ]);
     }
 

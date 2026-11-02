@@ -153,3 +153,16 @@ e as cinco tabelas de domínio de `devsbook_test` ficaram vazias ao final.
 Rollback e reaplicação também foram verificados exclusivamente nesse banco.
 O ambiente atual de `bin/dev` usa o volume PostgreSQL 18, separado dos anteriores.
 Detalhes em [postgresql18-validation.md](postgresql18-validation.md).
+
+## Encerramento local da Fase 0
+
+A suíte passou a ter **102 testes e 602 assertions** após adicionar dois
+cenários de seed: repetição/preservação e bloqueio fora de desenvolvimento/testes.
+Os 100 casos anteriores continuam presentes. Pint/PSR-12 e análise nível 5
+passaram; a ordem aleatória `20261101` manteve o resultado. A instalação limpa
+reproduziu lint, análise, suíte, seed, HTTP e conexão Redis. O seed de `devsbook`
+permaneceu intacto, com `devsbook_test` vazio após os testes.
+
+`composer test` agora falha também em incompletos, warnings e risky. A CI
+executa `composer check`, que inclui lint, análise e testes. Detalhes e limite
+da validação remota em [phase0-environment.md](phase0-environment.md).
