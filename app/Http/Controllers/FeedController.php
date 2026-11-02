@@ -3,14 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\UserRelation;
 use App\Models\PostLike;
 use App\Models\Post;
 use App\Models\PostComment;
 use App\Models\User;
-use Image;
+use Intervention\Image\ImageManager;
 
 class FeedController extends Controller
 {
@@ -19,8 +18,11 @@ class FeedController extends Controller
     public function __construct()
     {
         $this->middleware("auth:api");
+        $this->middleware(function ($request, $next) {
+            $this->loggedUser = $request->user();
 
-        $this->loggedUser = auth()->user();
+            return $next($request);
+        });
     }
 
     /***
@@ -49,10 +51,9 @@ class FeedController extends Controller
             $filename = md5(time() . rand(0, 9999) . ".jpg");
             $destPah = public_path("/media/uploads");
 
-            Image::make($data["photo"]->path())
-                ->resize(800, null, function ($constraint) {
-                    $constraint->aspectRatio();
-                })
+            app(ImageManager::class)->decodePath($data["photo"]->path())
+                ->scale(width: 800)
+                ->encodeUsingMediaType($data["photo"]->getMimeType(), quality: 90)
                 ->save($destPah . "/" . $filename);
 
             $messages[] = "Imagem processada com sucesso";
@@ -115,7 +116,9 @@ class FeedController extends Controller
     {
         $messages = [];
 
-        if ($id == false) $id = $this->loggedUser["id"];
+        if ($id == false) {
+            $id = $this->loggedUser["id"];
+        }
 
         $page = intval($request->input("page"));
         $perPage = 2;
@@ -146,7 +149,9 @@ class FeedController extends Controller
     {
         $messages = [];
 
-        if ($id == false) $id = $this->loggedUser["id"];
+        if ($id == false) {
+            $id = $this->loggedUser["id"];
+        }
 
         $page = intval($request->input("page"));
         $perPage = 2;
@@ -160,7 +165,7 @@ class FeedController extends Controller
             ->get();
 
         $total = Post::where("id_user", $id)
-            ->where("type", "photo")    
+            ->where("type", "photo")
             ->count();
         $pageCount = ceil($total / $perPage);
 
