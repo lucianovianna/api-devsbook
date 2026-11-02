@@ -231,3 +231,47 @@ aleatória. A instalação limpa pelo lock reproduziu o resultado. Detalhes em
 
 Validar PostgreSQL 18 e completar o ambiente da Fase 0. Não há benchmark
 nesta etapa; performance e concorrência continuam nas fases correspondentes.
+
+## 2026-11-01 — Validar schema entre PostgreSQL 14 e 18
+
+### Contexto
+
+A aplicação Laravel 13/PHP 8.5 passou a executar em um cluster PostgreSQL 18
+novo, mantendo os volumes do 14 e do legado. A suíte passou sem mudar código
+de domínio, migrations ou testes.
+
+### Hipótese e observação
+
+Comparar a quantidade de registros de `pg_constraint` parecia uma forma
+simples de verificar se as migrations criaram as mesmas constraints.
+O catálogo apresentou 6 entradas no 14 e 33 no 18, mesmo com a mesma migration.
+
+### Conceitos e aprendizado
+
+O PostgreSQL 18 passou a representar `NOT NULL` em `pg_constraint` como tipo
+`n`. Os 27 registros novos correspondem às mesmas 27 colunas não nulas do
+schema anterior. Uma diferença de representação no catálogo não implica
+uma mudança nas regras do domínio. A comparação precisa considerar tipos,
+defaults, nulabilidade, constraints e índices, além de contagens.
+
+Também há diferença entre migrations de schema e upgrade de um cluster.
+A imagem Docker 18 usa `/var/lib/postgresql/18/docker`; o volume foi montado
+em `/var/lib/postgresql`. Trocar a imagem não converte os arquivos do 14.
+
+### Decisão e trade-off
+
+Usar volume 18 novo e migrations, porque a referência estava sem dados de
+domínio. Os volumes antigos foram preservados. Isso valida a aplicação com
+o banco novo; não comprova uma transferência de dados com dump/restore ou
+`pg_upgrade`, que exigiria um ensaio específico se houvesse dados a migrar.
+
+### Evidência
+
+100 testes/585 assertions, também em ordem aleatória; comparação do schema,
+rollback/reaplicação isolados, HTTP e persistência após recriar o container.
+Ver [postgresql18-validation.md](architecture/postgresql18-validation.md).
+Não houve benchmark ou avaliação de ganho de performance.
+
+### Próximo passo
+
+Completar Redis, seed de desenvolvimento e CI na Fase 0.

@@ -12,7 +12,7 @@ O projeto foi criado originalmente em 2021 e atualmente possui uma base semelhan
 
 - Laravel 13, migrado a partir do Laravel 8;
 - PHP 8.5 em runtime Docker;
-- PostgreSQL configurado como banco;
+- PostgreSQL 18.6 no ambiente local, validado com a suíte de regressão;
 - Redis configurável, mas ainda não utilizado como parte central da arquitetura;
 - `QUEUE_CONNECTION=sync`;
 - `SESSION_DRIVER=file`;
@@ -93,8 +93,9 @@ Ver `docs/architecture/legacy-known-issues.md`.
 
 Base limpa Laravel 13 integrada no mesmo repositório, com runtime PHP 8.5
 e dependências atualizadas. Detalhes, versões resolvidas e validação em
-`docs/architecture/laravel13-migration.md`. O Compose desta etapa mantém
-PostgreSQL 14; PostgreSQL 18 e Redis ainda não foram entregues.
+`docs/architecture/laravel13-migration.md`. A migração Laravel/PHP foi
+validada primeiro no PostgreSQL 14. O Compose agora usa PostgreSQL 18;
+Redis ainda não foi entregue.
 
 Validar:
 
@@ -113,6 +114,15 @@ Validar:
 Evitar refatorações arquiteturais não necessárias durante o upgrade.
 
 ### 4. PostgreSQL
+
+PostgreSQL 18.6 validado no Laravel 13.39.0/PHP 8.5.12: migrations,
+rollback/reaplicação isolados, seeder atual, schema, suíte completa e HTTP.
+Resultado: 100 testes/585 assertions, também em ordem aleatória. Não foi
+necessário alterar código de domínio ou migrations.
+
+O volume anterior PostgreSQL 14 foi preservado. O novo cluster não importa
+dados automaticamente. O seeder ainda não insere dados de desenvolvimento.
+Ver `docs/architecture/postgresql18-validation.md`.
 
 Garantir execução com PostgreSQL moderno.
 
@@ -180,13 +190,13 @@ Não implementar nesta fase:
 
 ## Definition of Done
 
-- [ ] todas as versões alvo confirmadas (Laravel 13/PHP 8.5 confirmados; banco e Redis pendentes);
-- [x] aplicação executando em Laravel 13/PHP 8.5 (PostgreSQL ainda 14);
+- [ ] todas as versões alvo confirmadas (Laravel 13/PHP 8.5/PostgreSQL 18 confirmados; Redis pendente);
+- [x] aplicação executando em Laravel 13/PHP 8.5/PostgreSQL 18;
 - [x] testes de regressão passando no legado e revalidados após o upgrade;
-- [ ] PostgreSQL 18 funcionando com migrations e seeders;
+- [x] PostgreSQL 18 funcionando com migrations e execução do seeder atual (ainda vazio);
 - [ ] Redis disponível no ambiente;
 - [ ] `docker compose up` sobe o ambiente completo (incluindo PostgreSQL 18 e Redis);
-- [ ] novo clone consegue configurar a stack completa pelo README (Laravel/PHP já reproduzidos);
+- [ ] novo clone consegue configurar a stack completa pelo README (Laravel/PHP/PostgreSQL 18 já validados);
 - [ ] CI executa testes automaticamente;
 - [x] dependências críticas da aplicação atualizadas;
 - [ ] soluções de fases futuras não foram antecipadas;

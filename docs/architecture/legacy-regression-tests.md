@@ -140,3 +140,16 @@ Isolamento continua no PostgreSQL `devsbook_test`, com verificação da conexão
 antes de limpar e transação revertida por cenário. Os limites de cobertura
 e concorrência descritos acima permanecem. Detalhes em
 [laravel13-migration.md](laravel13-migration.md).
+
+## Validação com PostgreSQL 18
+
+A mesma suíte passou no PostgreSQL 18.6, com Laravel 13.39.0/PHP 8.5.12:
+100 testes e 585 assertions, sem falhas, avisos ou incompletos. A ordem
+aleatória com seed `20261101` apresentou o mesmo resultado. Nenhum teste
+ou assertion precisou ser alterado para trocar a versão do banco.
+
+O banco de desenvolvimento manteve um registro sentinela durante os testes,
+e as cinco tabelas de domínio de `devsbook_test` ficaram vazias ao final.
+Rollback e reaplicação também foram verificados exclusivamente nesse banco.
+O ambiente atual de `bin/dev` usa o volume PostgreSQL 18, separado dos anteriores.
+Detalhes em [postgresql18-validation.md](postgresql18-validation.md).

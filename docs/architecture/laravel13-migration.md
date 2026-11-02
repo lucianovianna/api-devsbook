@@ -2,6 +2,10 @@
 
 Data: 2026-11-01. Escopo: terceira etapa da Fase 0.
 
+Este relato registra a migração Laravel/PHP validada no PostgreSQL 14.
+Na etapa seguinte, PostgreSQL 18.6 foi validado e tornou-se o banco do
+Compose atual. Ver [postgresql18-validation.md](postgresql18-validation.md).
+
 ## Problema e sequência
 
 O Laravel 8 e seu lock dependiam de PHP 8.0 para executar os contratos existentes.

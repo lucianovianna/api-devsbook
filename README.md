@@ -28,9 +28,8 @@ curl http://localhost:8000/api/ping
 ./bin/dev exec -T app composer check-platform-reqs
 ```
 
-A API fica em `http://localhost:8000`. O PostgreSQL 14 permanece como referência
-nesta entrega, para validar a migração de Laravel/PHP separadamente da mudança
-de banco. PostgreSQL 18, Redis e CI continuam como próximas entregas da Fase 0.
+A API fica em `http://localhost:8000` e usa PostgreSQL 18.6, validado com
+Laravel 13/PHP 8.5. Redis e CI continuam como próximas entregas da Fase 0.
 O seeder atual não insere dados; a suíte usa factories pequenas por cenário.
 
 O Compose seleciona `devsbook` para desenvolvimento e cria `devsbook_test`
@@ -56,8 +55,23 @@ APP_PORT=8001 DB_PORT_FORWARD=5435 ./bin/dev up -d
 
 `./bin/dev down` preserva o volume. Não use `down -v` para reiniciar: ele apaga
 os bancos desse ambiente. A mídia continua em `public/media` no checkout.
-O volume moderno é separado do volume legado; dados antigos não são copiados
-automaticamente. O servidor Artisan é destinado ao desenvolvimento local.
+O volume atual é `devsbook_postgres18`, montado em `/var/lib/postgresql`.
+Os volumes anteriores `devsbook_php85-postgres` (PostgreSQL 14 da migração
+Laravel/PHP) e `devsbook-legacy_legacy-postgres` (legado) são preservados;
+dados antigos não são copiados automaticamente. Ao atualizar um checkout
+existente, execute as migrations no cluster novo antes de usar a API:
+
+```bash
+./bin/dev up -d postgres
+./bin/dev run --rm app php artisan migrate --seed
+./bin/dev up -d
+```
+
+A validação reconstruiu o schema em um cluster vazio; não é um procedimento
+de migração de dados existentes. Consulte
+[postgresql18-validation.md](docs/architecture/postgresql18-validation.md)
+para versões, isolamento e resultados. O servidor Artisan é destinado ao
+desenvolvimento local.
 
 ## Referência do legado
 
