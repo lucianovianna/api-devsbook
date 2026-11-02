@@ -4,22 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use App\Models\UserRelation;
 use App\Models\User;
 use DateTime;
-use Image;
+use Intervention\Image\ImageManager;
 
 class UserController extends Controller
 {
     private $loggedUser;
-    
+
     public function __construct()
     {
         $this->middleware("auth:api");
+        $this->middleware(function ($request, $next) {
+            $this->loggedUser = $request->user();
 
-        $this->loggedUser = Auth::user();
+            return $next($request);
+        });
     }
 
     public function update(Request $request)
@@ -28,7 +31,7 @@ class UserController extends Controller
 
         $validator = Validator::make($data, [
             'name'             => ['string', 'min:4', 'max:100'],
-            'email'            => ['email', 'unique:users,email', 'max:100'],
+            'email'            => ['email', Rule::unique('users', 'email')->ignore($this->loggedUser['id']), 'max:100'],
             'password'         => ['string', 'min:4', 'max:100'],
             'password_confirm' => ['string', 'min:4', 'max:100'],
             'birthdate'        => ['date'],
@@ -38,11 +41,11 @@ class UserController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                "message" => $validator->errors(), 
+                "message" => $validator->errors(),
                 "error" => true,
             ], 400);
         }
-        
+
         $user = User::find($this->loggedUser["id"]);
         $msg = [];
 
@@ -72,7 +75,7 @@ class UserController extends Controller
                 $msg[] = "Senha atualizada.";
             } else {
                 return response()->json([
-                    "message" => "As senhas não batem.", 
+                    "message" => "As senhas não batem.",
                     "error" => true
                 ], 400);
             }
@@ -97,20 +100,20 @@ class UserController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                "messages" => $validator->errors(), 
+                "messages" => $validator->errors(),
                 "error" => true,
             ], 400);
         }
 
         $messages = [];
 
-        $filename = md5(time().rand(0,9999)) . ".jpg";
+        $filename = md5(time().rand(0, 9999)) . ".jpg";
         $destPath = public_path("/media/avatars");
-        
-        Image::make($data["avatar"]->path())
-            ->fit(200, 200)
-            ->save($destPath . "/" . $filename);
-        
+
+        app(ImageManager::class)->decodePath($data["avatar"]->path())
+            ->cover(200, 200)
+            ->save($destPath . "/" . $filename, quality: 90);
+
         $user = User::find($this->loggedUser["id"]);
         $user->avatar = $filename;
         $user->save();
@@ -133,20 +136,20 @@ class UserController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                "messages" => $validator->errors(), 
+                "messages" => $validator->errors(),
                 "error" => true,
             ], 400);
         }
 
         $messages = [];
 
-        $filename = md5(time().rand(0,9999)) . ".jpg";
+        $filename = md5(time().rand(0, 9999)) . ".jpg";
         $destPath = public_path("/media/covers");
-        
-        Image::make($data["cover"]->path())
-            ->fit(850, 310)
-            ->save($destPath . "/" . $filename);
-        
+
+        app(ImageManager::class)->decodePath($data["cover"]->path())
+            ->cover(850, 310)
+            ->save($destPath . "/" . $filename, quality: 90);
+
         $user = User::find($this->loggedUser["id"]);
         $user->cover = $filename;
         $user->save();
@@ -175,14 +178,14 @@ class UserController extends Controller
 
         $info["avatar"] = url("media/avatars/" . $info["avatar"]);
         $info["cover"] = url("media/covers/" . $info["cover"]);
-        
+
         $info["me"] = $info["id"] == $this->loggedUser["id"] ? true : false;
 
         $info["age"] = (new DateTime($info["birthdate"]))->diff(new DateTime())->y;
 
-        $info["followers"] = UserRelation::where("user_to", $info["id"])->count();        
+        $info["followers"] = UserRelation::where("user_to", $info["id"])->count();
         $info["following"] = UserRelation::where("user_from", $info["id"])->count();
-        
+
         $info["photoCount"] = Post::where("id_user", $info["id"])
             ->where("type", "photo")
             ->count();
@@ -203,7 +206,7 @@ class UserController extends Controller
 
         if ($id == $this->loggedUser["id"]) {
             return response()->json(["error" => "Você não pode seguir a si mesmo"], 400);
-        } else if (!User::find($id)) {
+        } elseif (!User::find($id)) {
             return response()->json(["error" => "Usuário inexistente"], 400);
         }
 
@@ -214,19 +217,19 @@ class UserController extends Controller
         if ($relation) {
             $relation->delete();
 
-            $messages["isFollowing"] = false; 
+            $messages["isFollowing"] = false;
         } else {
             $newRelation = new UserRelation();
             $newRelation->user_from = $this->loggedUser["id"];
             $newRelation->user_to = $id;
             $newRelation->save();
 
-            $messages["isFollowing"] = true; 
+            $messages["isFollowing"] = true;
         }
 
-        $messages["followers"] = UserRelation::where("user_to", $id)->count(); 
+        $messages["followers"] = UserRelation::where("user_to", $id)->count();
 
-        return response()->json([$messages]); 
+        return response()->json([$messages]);
     }
 
     public function followers($id)
@@ -253,7 +256,7 @@ class UserController extends Controller
         }
 
         foreach ($following as $item) {
-            $user = User::find($item["user_from"]);
+            $user = User::find($item["user_to"]);
             $messages["following"][] = [
                 "id" => $user["id"],
                 "name" => $user["name"],

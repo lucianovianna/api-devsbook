@@ -1,0 +1,16 @@
+<?php
+
+namespace Tymon\JWTAuth\Claims;
+
+// Nullable TTL is supported by the payload factory and preserved by our adapter.
+class Factory
+{
+    /** @var int|null */
+    protected $ttl;
+
+    /**
+     * @param int|null $ttl
+     * @return $this
+     */
+    public function setTTL($ttl) {}
+}

@@ -1,0 +1,64 @@
+name: devsbook
+
+services:
+  app:
+    build:
+      context: ./docker/php85
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    working_dir: /var/www/html
+    environment:
+      COMPOSER_HOME: /tmp/composer
+      XDG_CONFIG_HOME: /tmp/devsbook-config
+      XDG_DATA_HOME: /tmp/devsbook-data
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: devsbook
+      DB_USERNAME: devsbook
+      DB_PASSWORD: devsbook-local
+      REDIS_CLIENT: predis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "127.0.0.1:${APP_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000", "--no-reload"]
+
+  postgres:
+    image: postgres:18-bookworm@sha256:5c4783a8cc3f0074912164f94dfa1be4e043438f0f707cf968d7af9a0d31a2c8
+    environment:
+      POSTGRES_DB: devsbook
+      POSTGRES_USER: devsbook
+      POSTGRES_PASSWORD: devsbook-local
+    ports:
+      - "127.0.0.1:${DB_PORT_FORWARD:-15432}:5432"
+    volumes:
+      - postgres18:/var/lib/postgresql
+      - ./docker/php85/init-test-database.sql:/docker-entrypoint-initdb.d/01-test-database.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devsbook -d devsbook"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  redis:
+    image: redis:8-alpine@sha256:21090af93f8324db2f0f0f4f38a7c60369d47d917e000c3423d89d2ae2883537
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "127.0.0.1:${REDIS_PORT_FORWARD:-16379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+volumes:
+  postgres18:
