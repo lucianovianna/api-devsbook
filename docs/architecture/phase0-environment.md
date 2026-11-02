@@ -6,7 +6,7 @@ Data: 2026-11-01. Escopo: última entrega local da Fase 0.
 
 Após modernizar Laravel/PHP e validar PostgreSQL 18, faltavam um Redis
 acessível pela aplicação, dados pequenos para exercitar o domínio, verificações
-automáticas de código e um pipeline reproduzível. Esta entrega completa essas
+de código reproduzíveis. Esta entrega completa essas
 peças e mantém os contratos validados pelas etapas anteriores.
 
 Redis resolve, nesta fase, a preparação e verificação de conectividade do
@@ -30,14 +30,13 @@ reavaliado se um problema concreto exigir isso.
 | Predis | 3.7.0, dependência de execução no lock |
 | Larastan / PHPStan | 3.13.2 / 2.3.4, dependências de desenvolvimento |
 | Pint | 1.32.1, preset PSR-12 |
-| CI | GitHub Actions, Ubuntu 24.04, checkout v6 fixado por SHA |
+| Fluxo de validação | `composer check` local antes de integrar na `main` |
 
 - `compose.yaml`: app, PostgreSQL e Redis; healthchecks nos serviços de dados;
   app depende da disponibilidade dos dois.
 - `bin/dev`: preserva UID/GID e encaminha comandos ao Compose.
 - `.env.example`: configuração pública do ambiente; segredos permanecem vazios.
 - `composer.json`: `lint`, `format`, `analyse`, `test` e `check`.
-- `.github/workflows/ci.yml`: pipeline sobre o mesmo Compose usado localmente.
 - `README.md`: instalação, dados de demonstração, verificações e operação.
 
 O volume PostgreSQL 18 e os dois volumes anteriores permanecem preservados.
@@ -98,23 +97,27 @@ de TTL nulo e de expiração finita. Não houve alteração em `vendor`.
 incompletos, warnings e risky. O helper continua conferindo o banco efetivo
 antes de `RefreshDatabase` limpar `devsbook_test`.
 
-## CI e limite de verificação remota
+## Fluxo de validação local
 
-O workflow é acionado por push e pull request, com permissão somente de leitura
-de conteúdo. Constrói o runtime, instala o lock, gera chaves temporárias, aplica
-migrations com seed em `devsbook`, sobe os serviços e executa:
+O autor optou por executar as verificações localmente antes de levar alterações
+à `main`, pois mantém o projeto sozinho. O workflow de GitHub Actions foi
+removido para simplificar esse fluxo. Não há validação remota pendente.
 
-1. `composer validate --strict` e `composer check-platform-reqs`;
-2. `composer check` (Pint, Larastan/PHPStan e suíte);
-3. ping HTTP e conexão Redis pelo Laravel.
+Com o ambiente em execução:
 
-Em caso de falha, coleta logs de serviços; ao terminar, remove os containers
-e volumes exclusivos daquele runner. Não usa credenciais externas nem faz deploy.
+```bash
+./bin/dev exec -T app composer validate --strict
+./bin/dev exec -T app composer check-platform-reqs
+./bin/dev exec -T app composer check
+```
 
-A sintaxe do workflow foi validada com actionlint. A sequência executável do
-job, após checkout, foi reproduzida localmente em cópia limpa, com projeto
-Compose, portas e volumes próprios. A execução hospedada no GitHub só poderá
-ser observada após publicar os arquivos. Não houve push nesta etapa.
+O último comando reúne Pint, Larastan/PHPStan e testes. As mesmas verificações
+foram reproduzidas em instalação limpa. O ambiente Docker e os comandos locais
+continuam disponíveis.
+
+Inicialmente foi implementado um workflow em pushes e pull requests, validado
+com actionlint e com seus comandos reproduzidos localmente. Depois de observar
+as execuções no GitHub, o autor decidiu adotar somente a validação local.
 
 ## Evidência de validação
 
@@ -133,7 +136,7 @@ ser observada após publicar os arquivos. Não houve push nesta etapa.
 - Nessa cópia, login de Ana e feed com 4 posts/2 por página passaram via HTTP.
   Após a suíte, as contagens de desenvolvimento permaneceram 3/4/3/2/2 e
   todas as tabelas de domínio do banco de testes ficaram vazias.
-- Actionlint: workflow aprovado. O primeiro run hospedado não foi executado.
+- Na entrega inicial, o workflow passou no actionlint; posteriormente foi removido por decisão do autor.
 - Containers e volume temporários removidos após o ensaio. O ambiente principal
   continua disponível, com os dados pequenos do seed. Mídia versionada intacta.
 - `git diff --check`: aprovado.
@@ -143,8 +146,7 @@ carga, concorrência, falhas distribuídas ou todas as combinações de entrada.
 
 ## Próxima etapa do laboratório
 
-As entregas locais da Fase 0 estão prontas; a primeira execução hospedada da
-CI deve ser conferida após publicação. Depois, a Fase 1 introduz volumes e
+A Fase 0 está concluída com verificações locais. A Fase 1 introduz volumes e
 medições de baseline, mediante a próxima solicitação do autor. Nenhum
 experimento da Fase 1 foi iniciado.
 
@@ -153,4 +155,3 @@ experimento da Fase 1 foi iniciado.
 - [Larastan — instalação e níveis](https://github.com/larastan/larastan).
 - [PHPStan — stub files](https://phpstan.org/user-guide/stub-files).
 - [Predis — cliente PHP](https://github.com/predis/predis).
-- [Actions checkout](https://github.com/actions/checkout).

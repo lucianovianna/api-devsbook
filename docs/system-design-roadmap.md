@@ -422,7 +422,10 @@ docker compose up
 - testes;
 - lint;
 - static analysis;
-- CI simples no GitHub Actions.
+- verificações locais de lint, análise estática e testes antes de integrar na `main`.
+
+Por decisão do autor, o projeto individual usa validação local. O workflow de
+GitHub Actions foi removido; CI pode ser reavaliada se a forma de trabalho mudar.
 
 ---
 

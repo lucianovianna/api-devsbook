@@ -28,7 +28,6 @@ ficam em [docs/current-phase.md](docs/current-phase.md).
 | Docker e Docker Compose | Ambiente local de execução |
 | PHPUnit | Testes de regressão |
 | Pint e PHPStan/Larastan | Estilo de código e análise estática |
-| GitHub Actions | Verificações em pushes e pull requests |
 
 As versões exatas das dependências estão no `composer.lock`; as imagens do
 ambiente estão fixadas por digest em `compose.yaml` e no Dockerfile.
@@ -176,9 +175,9 @@ inicialização de um volume vazio. O helper confere o banco efetivo antes de
 limpar o schema, e cada cenário reverte sua transação. Os dados de demonstração
 permanecem em `devsbook`.
 
-O [workflow de CI](.github/workflows/ci.yml) usa o mesmo Compose e os comandos
-do README para instalar dependências, configurar chaves temporárias, aplicar
-migrations com seed e verificar código, testes, HTTP e conexão Redis.
+Antes de levar alterações à `main`, execute as verificações localmente com
+`./bin/dev exec -T app composer check`. O projeto é mantido por uma pessoa e,
+por escolha do autor, não possui workflow automático no GitHub Actions.
 
 ## Endpoints
 
@@ -218,7 +217,7 @@ A paginação começa em zero. Like e follow alternam o estado a cada chamada.
 - [Roadmap de System Design](docs/system-design-roadmap.md): objetivos e sequência dos estudos.
 - [Trabalho atual](docs/current-phase.md): andamento, entregas e limites de escopo.
 - [Learning log](docs/learning-log.md): aprendizados e lacunas identificadas.
-- [Ambiente e verificações](docs/architecture/phase0-environment.md): decisões, validações e limites da CI.
+- [Ambiente e verificações](docs/architecture/phase0-environment.md): decisões e fluxo de validação local.
 - [Testes de regressão](docs/architecture/legacy-regression-tests.md): cobertura e isolamento.
 - [Migração Laravel/PHP](docs/architecture/laravel13-migration.md) e [validação PostgreSQL 18](docs/architecture/postgresql18-validation.md): histórico da modernização.
 - [Ambiente legado](docs/architecture/legacy-environment.md): reprodução do Laravel 8 em checkout separado, com seu próprio lock e dependências.

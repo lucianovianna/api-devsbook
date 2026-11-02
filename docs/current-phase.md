@@ -8,9 +8,9 @@ A intenção desta fase é criar uma aplicação moderna, reproduzível, testáv
 
 ## Estado atual
 
-Entregas locais da Fase 0 concluídas e reproduzidas em instalação limpa.
-O workflow está implementado e validado localmente; a primeira execução
-hospedada no GitHub permanece pendente da publicação dos arquivos.
+Fase 0 concluída, com ambiente reproduzido em instalação limpa.
+Por decisão do autor, lint, análise e testes são executados localmente antes
+de levar alterações à `main`. O workflow automático foi removido.
 Detalhes em `docs/architecture/phase0-environment.md`.
 
 O projeto foi criado originalmente em 2021 e atualmente possui uma base semelhante a:
@@ -49,7 +49,7 @@ As versões exatas devem ser confirmadas antes da execução do upgrade.
 5. validar autenticação e endpoints existentes;
 6. modernizar PostgreSQL e ambiente local;
 7. adicionar Docker Compose;
-8. adicionar CI;
+8. disponibilizar verificações locais de código e testes;
 9. encerrar a fase com aplicação funcional e reproduzível.
 
 Não é objetivo desta fase estudar upgrades sequenciais Laravel 8 → 9 → 10 → 11 → 12 → 13, salvo se surgir uma necessidade técnica concreta.
@@ -162,22 +162,18 @@ bloqueio em produção. A factory de usuário permanece disponível à suíte.
 
 Grandes volumes pertencem à Fase 1.
 
-### 7. CI
+### 7. Verificações locais
 
-Pipeline entregue em `.github/workflows/ci.yml`, acionado por push e pull request.
-Usa o mesmo Compose, lock e comandos do README, com:
+Lint, análise estática e testes estão disponíveis em um único comando:
 
+```bash
+./bin/dev exec -T app composer check
+```
 
-- instalação de dependências;
-- preparação do ambiente;
-- migrations;
-- execução dos testes;
-- Pint/PSR-12 e Larastan/PHPStan nível 5;
-- verificação de ping HTTP e conexão Redis pela aplicação.
-
-Workflow validado com actionlint; sequência executável reproduzida localmente
-em cópia limpa. Nenhuma execução hospedada foi observada, pois não houve push.
-Essa verificação final permanece explícita abaixo.
+O autor executa esse comando antes de levar alterações à `main`.
+O workflow de GitHub Actions foi removido por preferência pelo fluxo local
+no projeto individual. Não há execução remota pendente para encerrar a fase.
+As verificações e a instalação limpa já foram validadas.
 
 ## Fora do escopo
 
@@ -213,14 +209,13 @@ Não implementar nesta fase:
 - [x] Redis disponível e conexão Laravel verificada;
 - [x] `docker compose up` sobe o ambiente após a configuração inicial;
 - [x] instalação limpa configurada e verificada conforme o README;
-- [x] pipeline de CI configurado para executar testes automaticamente;
-- [ ] primeira execução hospedada da CI confirmada após publicação;
+- [x] comando local de lint, análise e testes disponível e validado;
 - [x] dependências críticas atualizadas;
 - [x] soluções de fases futuras não foram antecipadas;
 - [x] decisões, riscos e limites documentados.
 
-A Fase 0 permanece como referência atual até conferir a CI hospedada e
-combinar o início da Fase 1. Não foram iniciados experimentos de baseline.
+A Fase 0 está concluída. O início da Fase 1 será combinado com o autor;
+não foram iniciados experimentos de baseline.
 
 ## Primeira tarefa recomendada
 

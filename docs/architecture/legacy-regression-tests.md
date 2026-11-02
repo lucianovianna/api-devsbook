@@ -163,6 +163,7 @@ passaram; a ordem aleatória `20261101` manteve o resultado. A instalação limp
 reproduziu lint, análise, suíte, seed, HTTP e conexão Redis. O seed de `devsbook`
 permaneceu intacto, com `devsbook_test` vazio após os testes.
 
-`composer test` agora falha também em incompletos, warnings e risky. A CI
-executa `composer check`, que inclui lint, análise e testes. Detalhes e limite
-da validação remota em [phase0-environment.md](phase0-environment.md).
+`composer test` agora falha também em incompletos, warnings e risky.
+O autor executa `composer check` localmente antes de integrar na `main`;
+o comando inclui lint, análise e testes. O workflow automático foi removido.
+Detalhes em [phase0-environment.md](phase0-environment.md).

@@ -313,3 +313,17 @@ Ver [phase0-environment.md](architecture/phase0-environment.md).
 
 Conferir a CI após publicação e combinar o início da Fase 1, com medições
 antes de qualquer otimização.
+
+## 2026-11-01 — Simplificar o fluxo de validação
+
+O workflow de GitHub Actions foi implementado e executou verificações em pushes,
+pull requests e merges. O autor considerou esse fluxo excessivo para o projeto
+individual e optou por rodar `composer check` localmente antes de integrar na
+`main`.
+
+O workflow foi removido e o roadmap ajustado. Pint, Larastan/PHPStan, testes e
+ambiente reproduzível permanecem disponíveis. O trade-off é que a execução das
+verificações depende da disciplina do autor, sem confirmação automática no
+GitHub. CI pode ser reconsiderada se a colaboração ou a rotina mudar.
+
+Com essa decisão, não há mais pendência de CI para concluir a Fase 0.
