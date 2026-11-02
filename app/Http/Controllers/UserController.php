@@ -6,6 +6,7 @@ use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use App\Models\UserRelation;
 use App\Models\User;
 use DateTime;
@@ -28,7 +29,7 @@ class UserController extends Controller
 
         $validator = Validator::make($data, [
             'name'             => ['string', 'min:4', 'max:100'],
-            'email'            => ['email', 'unique:users,email', 'max:100'],
+            'email'            => ['email', Rule::unique('users', 'email')->ignore($this->loggedUser['id']), 'max:100'],
             'password'         => ['string', 'min:4', 'max:100'],
             'password_confirm' => ['string', 'min:4', 'max:100'],
             'birthdate'        => ['date'],
@@ -253,7 +254,7 @@ class UserController extends Controller
         }
 
         foreach ($following as $item) {
-            $user = User::find($item["user_from"]);
+            $user = User::find($item["user_to"]);
             $messages["following"][] = [
                 "id" => $user["id"],
                 "name" => $user["name"],

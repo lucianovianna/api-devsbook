@@ -2,11 +2,12 @@
 
 Registro iniciado em 2026-11-01, durante a ampliação dos testes da Fase 0.
 As falhas abaixo foram reproduzidas no Laravel 8.64.0 / PHP 8.0.30 /
-PostgreSQL 14.24. Não foram corrigidas nesta entrega de testes.
+PostgreSQL 14.24. Foram inicialmente registradas sem correção na entrega de testes.
+Em 2026-11-01, ambas foram corrigidas e validadas no legado antes do upgrade.
 
 ## LEGACY-001 — Atualização rejeita email próprio inalterado
 
-Status: aberto, reproduzido automaticamente.
+Status: corrigido em 2026-11-01, antes do upgrade Laravel/PHP.
 
 - Local: `UserController::update`, regra `unique:users,email`.
 - Cenário: um usuário autenticado envia `PUT /api/user` com seu email atual e
@@ -21,13 +22,14 @@ Status: aberto, reproduzido automaticamente.
   foi rejeitada pelo validator antes de alcançá-lo.
 - Teste: `KnownIssuesTest::test_profile_update_should_accept_the_users_unchanged_email`.
 
-A correção futura deve aceitar o email do usuário atual e continuar rejeitando
+Correção aplicada: `Rule::unique` ignora o ID do usuário autenticado. Aceita
+o email do usuário atual e continua rejeitando
 emails de terceiros. Esse último comportamento já é coberto por
 `ProfileUpdateTest`.
 
 ## LEGACY-002 — Lista de seguidos retorna a identidade de origem
 
-Status: aberto, reproduzido automaticamente.
+Status: corrigido em 2026-11-01, antes do upgrade Laravel/PHP.
 
 - Local: `UserController::followers`, preenchimento de `following`.
 - Cenário: A segue B e consulta `GET /api/user/{A}/followers`.
@@ -38,30 +40,24 @@ Status: aberto, reproduzido automaticamente.
   mas o loop busca `User::find(user_from)` em vez de `user_to`.
 - Teste: `KnownIssuesTest::test_following_list_should_contain_the_destination_user`.
 
-A correção futura deve preservar a direção da lista `followers`, as listas
+Correção aplicada: a lista `following` usa `user_to`. Foi preservada a
+direção da lista `followers`, as listas
 vazias e a resposta para usuário inexistente, cobertas por `RelationListTest`.
 
-## Como os testes sinalizam essas pendências
+## Validação das correções antes do upgrade
 
-`KnownIssuesTest` executa as requisições reais. Se encontra a manifestação
-específica da falha conhecida, chama `markTestIncomplete` com o identificador
-acima. Uma resposta diferente é validada contra o comportamento esperado e
-pode falhar normalmente. Não há captura genérica de erros nem teste aprovado
-por exigir um resultado incorreto.
-
-Quando a aplicação for corrigida, o ramo de pendência deixa de ser executado e
-as assertions do comportamento esperado precisam passar.
+`KnownIssuesTest` mantém os dois cenários como testes de regressão normais,
+com as assertions do comportamento esperado. Os ramos `markTestIncomplete`
+foram removidos após as correções; os cenários não foram removidos nem
+relaxados.
 
 ```bash
-./bin/legacy exec app php artisan test --filter=KnownIssuesTest
+./bin/legacy exec -T app php vendor/bin/phpunit --fail-on-incomplete
 ```
 
-Para tratar pendências como saída não zero:
+Resultado no Laravel 8.64.0 / PHP 8.0.30 / PostgreSQL 14.24: **97 testes,
+514 assertions, sem falhas ou incompletos**. Inclui rejeição de email de
+terceiros, seguidores de entrada, listas vazias e usuário inexistente.
 
-```bash
-./bin/legacy exec app php vendor/bin/phpunit --filter=KnownIssuesTest --fail-on-incomplete
-```
-
-Os dois casos incompletos devem continuar explícitos nos relatórios. Sua
-existência não representa cobertura aprovada desses comportamentos e não
-encerra as correções do legado.
+Esses resultados antecedem a modernização. A suíte deve continuar passando
+na stack nova. Este registro não representa uma auditoria exaustiva de bugs.
