@@ -2,6 +2,10 @@
 
 Data: 2026-11-01. Escopo: segunda etapa da Fase 0.
 
+As seções abaixo registram a entrega inicial no legado. Depois, LEGACY-001/002
+foram corrigidos antes do upgrade e a suíte foi migrada para Laravel 13/PHP 8.5.
+O estado atual e os comandos modernos estão ao final deste documento.
+
 ## Objetivo
 
 Registrar o comportamento HTTP e a persistência dos fluxos prioritários antes
@@ -112,3 +116,27 @@ Ambiente: Laravel 8.64.0, PHP 8.0.30 e PostgreSQL 14.24.
 
 Esses resultados validam a execução no legado. A mesma suíte deverá passar
 na stack moderna antes de concluir o upgrade.
+
+## Após as correções e migração Laravel 13/PHP 8.5
+
+Antes do upgrade, as duas correções passaram no Laravel 8/PHP 8.0:
+97 testes e 514 assertions, sem incompletos. `KnownIssuesTest` mantém os
+cenários e agora exige o comportamento correto, sem `markTestIncomplete`.
+
+No Laravel 13.39.0/PHP 8.5.12, os mesmos cenários continuam passando.
+Foram adicionados testes para TTL nulo do JWT, CORS e throttle: **100 testes,
+585 assertions**, também em ordem aleatória com seed `20261101`.
+Sem falhas, avisos ou incompletos.
+
+```bash
+./bin/dev exec -T app php artisan test --without-tty
+./bin/dev exec -T app php vendor/bin/phpunit --fail-on-incomplete --fail-on-warning --fail-on-risky
+```
+
+A migração adaptou providers para atributos estáticos do PHPUnit 12,
+`usePublicPath` para uploads e `flushController` para limpar middleware
+calculado entre requests. As assertions anteriores foram preservadas.
+Isolamento continua no PostgreSQL `devsbook_test`, com verificação da conexão
+antes de limpar e transação revertida por cenário. Os limites de cobertura
+e concorrência descritos acima permanecem. Detalhes em
+[laravel13-migration.md](laravel13-migration.md).

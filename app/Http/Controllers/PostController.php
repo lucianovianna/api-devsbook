@@ -16,8 +16,11 @@ class PostController extends Controller
     public function __construct()
     {
         $this->middleware("auth:api");
+        $this->middleware(function ($request, $next) {
+            $this->loggedUser = $request->user();
 
-        $this->loggedUser = auth()->user();
+            return $next($request);
+        });
     }
 
     public function like($id)

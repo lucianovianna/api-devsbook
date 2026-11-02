@@ -1,0 +1,49 @@
+name: devsbook
+
+services:
+  app:
+    build:
+      context: ./docker/php85
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    working_dir: /var/www/html
+    environment:
+      COMPOSER_HOME: /tmp/composer
+      XDG_CONFIG_HOME: /tmp/devsbook-config
+      XDG_DATA_HOME: /tmp/devsbook-data
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: devsbook
+      DB_USERNAME: devsbook
+      DB_PASSWORD: devsbook-local
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "127.0.0.1:${APP_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000", "--no-reload"]
+
+  # Keep the legacy DB version while validating the PHP/Laravel upgrade.
+  # PostgreSQL 18 and Redis belong to the next environment delivery.
+  postgres:
+    image: postgres:14-bookworm@sha256:a389ed49344afc8f4444efd4eb512965df07aaa6ed84b239b54a23246e9fe347
+    environment:
+      POSTGRES_DB: devsbook
+      POSTGRES_USER: devsbook
+      POSTGRES_PASSWORD: devsbook-local
+    ports:
+      - "127.0.0.1:${DB_PORT_FORWARD:-5434}:5432"
+    volumes:
+      - php85-postgres:/var/lib/postgresql/data
+      - ./docker/php85/init-test-database.sql:/docker-entrypoint-initdb.d/01-test-database.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devsbook -d devsbook"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  php85-postgres:

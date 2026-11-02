@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use App\Models\User;
 use Tests\ApiTestCase;
 
@@ -26,7 +27,7 @@ class CommentTest extends ApiTestCase
             ->assertJsonPath('0.posts.0.comments.0.user.id', $commenter->id);
     }
 
-    /** @dataProvider invalidComments */
+    #[DataProvider('invalidComments')]
     public function test_invalid_comment_is_not_persisted($data)
     {
         $user = User::factory()->create();
@@ -36,7 +37,7 @@ class CommentTest extends ApiTestCase
         $this->assertDatabaseCount('postcomments', 0);
     }
 
-    public function invalidComments(): array
+    public static function invalidComments(): array
     {
         return ['missing' => [[]], 'blank' => [['txt' => '   ']], 'not string' => [['txt' => ['invalid']]]];
     }

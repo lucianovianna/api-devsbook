@@ -2,6 +2,12 @@
 
 Data: 2026-11-01. Escopo: primeira etapa da Fase 0.
 
+Este documento registra a referência anterior ao upgrade. Para repetir os
+comandos abaixo, use o commit `672c10f` em um checkout separado, com seu
+próprio `.env` e `vendor`. O checkout atual exige PHP 8.5 e usa `bin/dev`;
+consulte [laravel13-migration.md](laravel13-migration.md). O runtime legado
+não instala nem executa as dependências modernas.
+
 ## Problema
 
 O checkout não tinha ambiente de execução documentado, dependências instaladas
@@ -76,7 +82,7 @@ Compose exigem `./bin/legacy up -d` para recriar o serviço.
 ## Operação
 
 Os comandos de configuração, testes, consulta com `psql` e encerramento estão
-no [README](../../README.md#ambiente-local-do-legado--fase-0).
+no [README](../../README.md#referência-do-legado).
 
 Não remover o volume para reiniciar a aplicação: `./bin/legacy down` seguido
 de `./bin/legacy up -d` preserva o banco. `down -v` apaga os dados deste ambiente.

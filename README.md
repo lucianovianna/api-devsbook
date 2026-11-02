@@ -1,74 +1,72 @@
 # Devsbook API
 
-## Ambiente local do legado — Fase 0
-
-O ambiente está em [compose.legacy.yaml](compose.legacy.yaml). Ele mantém as
-dependências do `composer.lock` e usa PHP 8.0 e PostgreSQL 14 para preparar os
-testes de regressão antes da migração para a stack moderna.
+## Ambiente local — Laravel 13 / PHP 8.5
 
 Pré-requisitos: Docker Engine e Docker Compose. PHP, Composer e `psql` locais
-não são necessários. No Linux, o wrapper `bin/legacy` usa o UID/GID do usuário
-para que os arquivos gerados no repositório tenham o proprietário correto.
-
-Na primeira execução, copie o exemplo somente se ainda não houver `.env`:
+não são necessários. O wrapper `bin/dev` preserva o UID/GID do usuário Linux.
 
 ```bash
 test -f .env || cp .env.example .env
-./bin/legacy build
-./bin/legacy run --rm app composer install --no-interaction --prefer-dist
-./bin/legacy run --rm app php artisan key:generate
-./bin/legacy run --rm app php artisan jwt:secret --force
-./bin/legacy run --rm app php artisan migrate --seed
-./bin/legacy up -d
+./bin/dev build
+./bin/dev run --rm app composer install --no-interaction --prefer-dist
 ```
 
-Os comandos de geração de chaves são para a configuração inicial. Preserve as
-chaves de um ambiente já configurado. A instalação usa o lock existente;
-não execute `composer update` nesta etapa.
-
-A API fica em `http://localhost:8000`. Verifique com:
+Somente na configuração inicial, gere as chaves:
 
 ```bash
+./bin/dev run --rm app php artisan key:generate
+./bin/dev run --rm app php artisan jwt:secret --force
+```
+
+Preserve as chaves de um ambiente já configurado. Depois:
+
+```bash
+./bin/dev run --rm app php artisan migrate --seed
+./bin/dev up -d
 curl http://localhost:8000/api/ping
-./bin/legacy exec app php artisan test
-./bin/legacy exec app composer check-platform-reqs
+./bin/dev exec -T app php artisan test --without-tty
+./bin/dev exec -T app composer check-platform-reqs
 ```
 
-A suíte mínima de regressão usa JWT real e o banco `devsbook_test`. Ela cobre
-autenticação, cadastro, leitura/edição de perfil e senha, feed, uploads, fotos,
-comentários, busca, likes e relações. Dois problemas preexistentes estão
-sinalizados como testes incompletos e registrados em
-[legacy-known-issues.md](docs/architecture/legacy-known-issues.md). O banco de testes
-é recriado na primeira execução de um teste de API e cada cenário usa uma
-transação revertida ao terminar. Detalhes e limites estão em
-[docs/architecture/legacy-regression-tests.md](docs/architecture/legacy-regression-tests.md).
+A API fica em `http://localhost:8000`. O PostgreSQL 14 permanece como referência
+nesta entrega, para validar a migração de Laravel/PHP separadamente da mudança
+de banco. PostgreSQL 18, Redis e CI continuam como próximas entregas da Fase 0.
+O seeder atual não insere dados; a suíte usa factories pequenas por cenário.
 
-O Compose fixa a conexão da aplicação no banco local `devsbook`, com usuário
-`devsbook` e senha `devsbook-local`. O PostgreSQL é publicado somente em
-`127.0.0.1:5433`. Essas credenciais são exclusivas deste ambiente de desenvolvimento.
-O banco separado `devsbook_test` é criado na primeira inicialização do volume;
-`phpunit.xml` seleciona esse banco durante os testes.
+O Compose seleciona `devsbook` para desenvolvimento e cria `devsbook_test`
+na primeira inicialização do volume. Os testes conferem o banco efetivo antes
+de limpar **somente `devsbook_test`** e revertem as transações de cada cenário.
+Os defeitos LEGACY-001/002 foram corrigidos antes do upgrade e seus testes
+permanecem na suíte. Consulte a [migração](docs/architecture/laravel13-migration.md)
+e os [testes de regressão](docs/architecture/legacy-regression-tests.md).
 
-Para consultar os bancos usando o cliente incluído no container:
+O banco local usa usuário `devsbook` e senha `devsbook-local`, exclusivos de
+desenvolvimento, publicado em `127.0.0.1:5434`. Para consultar:
 
 ```bash
-./bin/legacy exec postgres psql -U devsbook -d devsbook
-./bin/legacy exec postgres psql -U devsbook -d devsbook_test
+./bin/dev exec postgres psql -U devsbook -d devsbook
+./bin/dev exec postgres psql -U devsbook -d devsbook_test
 ```
 
-Se as portas estiverem ocupadas, use:
+Se as portas estiverem ocupadas:
 
 ```bash
-LEGACY_APP_PORT=8001 LEGACY_DB_PORT=5434 ./bin/legacy up -d
+APP_PORT=8001 DB_PORT_FORWARD=5435 ./bin/dev up -d
 ```
 
-Para encerrar, execute `./bin/legacy down`; os dados
-permanecem no volume. A mídia permanece no diretório `public/media` do checkout.
+`./bin/dev down` preserva o volume. Não use `down -v` para reiniciar: ele apaga
+os bancos desse ambiente. A mídia continua em `public/media` no checkout.
+O volume moderno é separado do volume legado; dados antigos não são copiados
+automaticamente. O servidor Artisan é destinado ao desenvolvimento local.
 
-Este ambiente é temporário e destinado à execução local do legado. Redis e o
-upgrade da stack entram nas próximas entregas.
-Veja as decisões e limitações em
-[docs/architecture/legacy-environment.md](docs/architecture/legacy-environment.md).
+## Referência do legado
+
+O runtime antigo (`compose.legacy.yaml`, `bin/legacy`) está documentado em
+[legacy-environment.md](docs/architecture/legacy-environment.md). Ele exige
+os arquivos Laravel 8 e seu lock, disponíveis no commit `672c10f`, em um
+checkout separado. Não execute PHP 8.0 com o `vendor`/lock modernos.
+Se o container antigo estiver usando a porta 8000, pare apenas o app com
+`./bin/legacy stop app` antes de subir o ambiente novo. Preserve seu volume.
 
 ## Endpoints
 

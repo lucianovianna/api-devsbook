@@ -2,12 +2,13 @@
 
 namespace Tests\Feature;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use App\Models\User;
 use Tests\ApiTestCase;
 
 class PhotosTest extends ApiTestCase
 {
-    /** @dataProvider photoRoutes */
+    #[DataProvider('photoRoutes')]
     public function test_photos_filter_by_author_and_type_and_preserve_urls_order_and_pagination($ownPhotos)
     {
         $viewer = User::factory()->create();
@@ -42,7 +43,7 @@ class PhotosTest extends ApiTestCase
             ->assertJsonCount(0, '0.posts')->assertJsonPath('0.total', 3);
     }
 
-    /** @dataProvider photoRoutes */
+    #[DataProvider('photoRoutes')]
     public function test_user_without_photos_has_an_empty_list($ownPhotos)
     {
         $viewer = User::factory()->create();
@@ -54,7 +55,7 @@ class PhotosTest extends ApiTestCase
             ->assertExactJson([['posts' => [], 'total' => 0, 'pageCount' => 0, 'currentPage' => 0]]);
     }
 
-    public function photoRoutes(): array
+    public static function photoRoutes(): array
     {
         return ['own' => [true], 'third party' => [false]];
     }

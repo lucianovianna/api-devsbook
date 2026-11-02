@@ -55,6 +55,9 @@ relaxados.
 ./bin/legacy exec -T app php vendor/bin/phpunit --fail-on-incomplete
 ```
 
+O comando acima foi executado antes da troca de runtime. No checkout atual,
+use `./bin/dev exec -T app php vendor/bin/phpunit --fail-on-incomplete`.
+
 Resultado no Laravel 8.64.0 / PHP 8.0.30 / PostgreSQL 14.24: **97 testes,
 514 assertions, sem falhas ou incompletos**. Inclui rejeição de email de
 terceiros, seguidores de entrada, listas vazias e usuário inexistente.

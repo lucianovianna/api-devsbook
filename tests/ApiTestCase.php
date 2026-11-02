@@ -62,7 +62,7 @@ abstract class ApiTestCase extends TestCase
         $this->app['tymon.jwt']->unsetToken();
 
         foreach ($this->app['router']->getRoutes() as $route) {
-            $route->controller = null;
+            $route->flushController();
         }
     }
 

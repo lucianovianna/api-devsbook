@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use App\Models\User;
 use Tests\ApiTestCase;
 
@@ -32,7 +33,7 @@ class RegistrationTest extends ApiTestCase
             ->assertOk()->assertJsonPath('0.data.id', $user->id);
     }
 
-    /** @dataProvider requiredFields */
+    #[DataProvider('requiredFields')]
     public function test_registration_requires_each_mandatory_field($field)
     {
         $data = $this->validUserData();
@@ -43,7 +44,7 @@ class RegistrationTest extends ApiTestCase
         $this->assertDatabaseCount('users', 0);
     }
 
-    public function requiredFields(): array
+    public static function requiredFields(): array
     {
         return [['name'], ['email'], ['password'], ['birthdate']];
     }

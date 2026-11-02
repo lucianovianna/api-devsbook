@@ -181,3 +181,53 @@ Cada componente precisa responder:
 ### Próximo passo
 
 Executar a **Fase 0 — Modernização da fundação**.
+
+## 2026-11-01 — Compatibilidade observada na modernização Laravel/PHP
+
+### Contexto
+
+Depois de corrigir LEGACY-001/002 no legado (97 testes/514 assertions), a
+base foi transportada para Laravel 13/PHP 8.5 com dependências atuais.
+
+### Hipótese inicial
+
+Preservar o arquivo de configuração JWT seria suficiente para manter o
+comportamento dos tokens.
+
+### O que aconteceu
+
+A suíte encontrou tokens novos expirados. `jwt-auth 2.3.1` converte o TTL
+`null` em zero em `Claims\Factory::setTTL`, embora a payload factory tenha
+um ramo que omite `exp` quando TTL é nulo. Também foi necessário limpar o
+middleware calculado da rota ao descartar controllers entre requests de teste;
+a closure anterior permanecia ligada à instância antiga.
+
+### Conceitos envolvidos e aprendizado
+
+- Compatibilidade inclui o significado de valores de configuração, não apenas
+  a existência da opção ou a satisfação das constraints do Composer.
+- O controller pode ser criado antes da execução do middleware de autenticação.
+  A identidade deve ser obtida depois de `auth:api`.
+- Testes HTTP no mesmo processo reutilizam objetos que requests reais normalmente
+  recriam. Descartar controller e manter sua closure calculada não reproduz
+  corretamente esse ciclo.
+- Nomes de arquivo sem extensão exigem escolher explicitamente o encoding na
+  nova biblioteca de imagens. O MIME real preserva JPEG/PNG dos posts.
+
+### Solução e trade-offs
+
+Um adaptador pequeno preserva TTL nulo e delega TTL finito à biblioteca. Isso
+mantém a política atual, ao custo de uma binding que precisa ser revista em
+futuros upgrades do JWT. Adotar TTL finito exigiria uma decisão de produto.
+O helper usa a API `flushController`; os testes não desabilitam autenticação.
+
+### Evidência
+
+Laravel 13.39.0/PHP 8.5.12: 100 testes e 585 assertions, também em ordem
+aleatória. A instalação limpa pelo lock reproduziu o resultado. Detalhes em
+[laravel13-migration.md](architecture/laravel13-migration.md).
+
+### Próximo passo
+
+Validar PostgreSQL 18 e completar o ambiente da Fase 0. Não há benchmark
+nesta etapa; performance e concorrência continuam nas fases correspondentes.

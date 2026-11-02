@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use App\Models\User;
 use Tests\ApiTestCase;
 
@@ -50,7 +51,7 @@ class ProfileUpdateTest extends ApiTestCase
         $this->assertSame($user->name, $user->fresh()->name);
     }
 
-    /** @dataProvider invalidFields */
+    #[DataProvider('invalidFields')]
     public function test_invalid_profile_fields_are_not_persisted($field, $value)
     {
         $user = User::factory()->create();
@@ -62,7 +63,7 @@ class ProfileUpdateTest extends ApiTestCase
         $this->assertSame($original, $user->fresh()->getAttributes());
     }
 
-    public function invalidFields(): array
+    public static function invalidFields(): array
     {
         return [
             'short name' => ['name', 'a'],
@@ -97,7 +98,7 @@ class ProfileUpdateTest extends ApiTestCase
             ->assertOk()->assertJsonPath('0.data.id', $user->id);
     }
 
-    /** @dataProvider invalidConfirmations */
+    #[DataProvider('invalidConfirmations')]
     public function test_password_confirmation_failure_does_not_persist_any_changes($confirmation)
     {
         $user = User::factory()->create();
@@ -112,7 +113,7 @@ class ProfileUpdateTest extends ApiTestCase
         $this->assertSame($user->name, $user->fresh()->name);
     }
 
-    public function invalidConfirmations(): array
+    public static function invalidConfirmations(): array
     {
         return ['missing' => [null], 'different' => ['different-password']];
     }

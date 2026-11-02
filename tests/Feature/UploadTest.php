@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
@@ -20,13 +21,13 @@ class UploadTest extends ApiTestCase
         foreach (['avatars', 'covers', 'uploads'] as $directory) {
             File::makeDirectory($this->publicDirectory.'/media/'.$directory, 0755, true);
         }
-        $this->app->instance('path.public', $this->publicDirectory);
+        $this->app->usePublicPath($this->publicDirectory);
         $this->beforeApplicationDestroyed(function () {
             File::deleteDirectory($this->publicDirectory);
         });
     }
 
-    /** @dataProvider supportedImages */
+    #[DataProvider('supportedImages')]
     public function test_upload_processes_real_images_and_persists_the_result($kind, $extension)
     {
         $user = User::factory()->create()->refresh();
@@ -76,7 +77,7 @@ class UploadTest extends ApiTestCase
         $this->assertCount(1, File::allFiles($this->publicDirectory));
     }
 
-    public function supportedImages(): array
+    public static function supportedImages(): array
     {
         return [
             'post JPEG' => ['post', 'jpg'], 'post PNG' => ['post', 'png'],
@@ -85,7 +86,7 @@ class UploadTest extends ApiTestCase
         ];
     }
 
-    /** @dataProvider rejectedUploads */
+    #[DataProvider('rejectedUploads')]
     public function test_missing_or_unsupported_file_leaves_database_and_media_unchanged($kind, $invalidFile)
     {
         $user = User::factory()->create()->refresh();
@@ -104,7 +105,7 @@ class UploadTest extends ApiTestCase
         $this->assertCount(0, File::allFiles($this->publicDirectory));
     }
 
-    public function rejectedUploads(): array
+    public static function rejectedUploads(): array
     {
         return [
             'post missing' => ['post', false], 'post invalid' => ['post', true],

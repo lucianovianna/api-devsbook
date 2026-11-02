@@ -10,7 +10,7 @@ use Illuminate\Validation\Rule;
 use App\Models\UserRelation;
 use App\Models\User;
 use DateTime;
-use Image;
+use Intervention\Image\ImageManager;
 
 class UserController extends Controller
 {
@@ -19,8 +19,11 @@ class UserController extends Controller
     public function __construct()
     {
         $this->middleware("auth:api");
+        $this->middleware(function ($request, $next) {
+            $this->loggedUser = $request->user();
 
-        $this->loggedUser = Auth::user();
+            return $next($request);
+        });
     }
 
     public function update(Request $request)
@@ -108,9 +111,9 @@ class UserController extends Controller
         $filename = md5(time().rand(0,9999)) . ".jpg";
         $destPath = public_path("/media/avatars");
         
-        Image::make($data["avatar"]->path())
-            ->fit(200, 200)
-            ->save($destPath . "/" . $filename);
+        app(ImageManager::class)->decodePath($data["avatar"]->path())
+            ->cover(200, 200)
+            ->save($destPath . "/" . $filename, quality: 90);
         
         $user = User::find($this->loggedUser["id"]);
         $user->avatar = $filename;
@@ -144,9 +147,9 @@ class UserController extends Controller
         $filename = md5(time().rand(0,9999)) . ".jpg";
         $destPath = public_path("/media/covers");
         
-        Image::make($data["cover"]->path())
-            ->fit(850, 310)
-            ->save($destPath . "/" . $filename);
+        app(ImageManager::class)->decodePath($data["cover"]->path())
+            ->cover(850, 310)
+            ->save($destPath . "/" . $filename, quality: 90);
         
         $user = User::find($this->loggedUser["id"]);
         $user->cover = $filename;

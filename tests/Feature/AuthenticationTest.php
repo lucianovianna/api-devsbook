@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use App\Models\User;
 use Tests\ApiTestCase;
 
@@ -47,14 +48,14 @@ class AuthenticationTest extends ApiTestCase
             ->assertJsonStructure(['message' => ['email', 'password']]);
     }
 
-    /** @dataProvider protectedEndpoints */
+    #[DataProvider('protectedEndpoints')]
     public function test_protected_endpoints_require_a_token($method, $uri)
     {
         $this->apiJson($method, $uri)->assertStatus(401)
             ->assertExactJson(['message' => 'Unauthenticated.']);
     }
 
-    public function protectedEndpoints(): array
+    public static function protectedEndpoints(): array
     {
         return [
             'profile' => ['GET', '/api/user'],
@@ -91,6 +92,24 @@ class AuthenticationTest extends ApiTestCase
 
         try {
             $this->apiJson('GET', '/api/user', [], $token)->assertStatus(401);
+        } finally {
+            $this->travelBack();
+        }
+    }
+
+    public function test_null_ttl_preserves_tokens_without_an_expiration_claim()
+    {
+        $this->app['tymon.jwt']->factory()->setTTL(null);
+        $user = User::factory()->create();
+        $token = $this->tokenFor($user);
+        $claims = $this->app['tymon.jwt']->setToken($token)->getPayload()->toArray();
+        $this->assertArrayNotHasKey('exp', $claims);
+
+        $this->travel(1)->days();
+
+        try {
+            $this->apiJson('GET', '/api/user', [], $token)
+                ->assertOk()->assertJsonPath('0.data.id', $user->id);
         } finally {
             $this->travelBack();
         }

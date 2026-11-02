@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use App\Models\User;
 use Tests\ApiTestCase;
 
@@ -27,14 +28,14 @@ class SearchTest extends ApiTestCase
             ->assertOk()->assertExactJson([['users' => []]]);
     }
 
-    /** @dataProvider invalidSearches */
+    #[DataProvider('invalidSearches')]
     public function test_search_requires_a_nonblank_string($query)
     {
         $this->apiJson('GET', '/api/search'.$query, [], $this->tokenFor(User::factory()->create()))
             ->assertStatus(400)->assertJsonStructure(['messages' => ['txt']]);
     }
 
-    public function invalidSearches(): array
+    public static function invalidSearches(): array
     {
         return ['missing' => [''], 'blank' => ['?txt=%20%20'], 'not string' => ['?txt[]=invalid']];
     }

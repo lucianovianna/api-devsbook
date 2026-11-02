@@ -10,14 +10,14 @@ A intenção desta fase é criar uma aplicação moderna, reproduzível, testáv
 
 O projeto foi criado originalmente em 2021 e atualmente possui uma base semelhante a:
 
-- Laravel 8;
-- compatibilidade antiga de PHP;
+- Laravel 13, migrado a partir do Laravel 8;
+- PHP 8.5 em runtime Docker;
 - PostgreSQL configurado como banco;
 - Redis configurável, mas ainda não utilizado como parte central da arquitetura;
 - `QUEUE_CONNECTION=sync`;
 - `SESSION_DRIVER=file`;
 - armazenamento local de mídia em `public/media`;
-- suíte mínima de regressão no PostgreSQL para os fluxos prioritários, além dos testes padrão do Laravel;
+- suíte de regressão no PostgreSQL cobrindo as rotas da API, além dos testes padrão do Laravel;
 - autenticação via JWT;
 - endpoints de autenticação, usuário, feed, posts, likes, comentários, follow/unfollow, busca e upload de mídia.
 
@@ -85,10 +85,16 @@ essa suíte a cada etapa da migração.
 
 A cobertura foi ampliada para uploads, atualização de perfil/senha,
 comentários, busca, fotos e listagem de relações. Dois problemas preexistentes
-estão reproduzidos como testes incompletos e registrados em
-`docs/architecture/legacy-known-issues.md`; não foram corrigidos nesta etapa.
+foram registrados e depois corrigidos no legado,
+antes do upgrade. Seus cenários continuam na suíte como testes normais.
+Ver `docs/architecture/legacy-known-issues.md`.
 
 ### 3. Upgrade Laravel/PHP
+
+Base limpa Laravel 13 integrada no mesmo repositório, com runtime PHP 8.5
+e dependências atualizadas. Detalhes, versões resolvidas e validação em
+`docs/architecture/laravel13-migration.md`. O Compose desta etapa mantém
+PostgreSQL 14; PostgreSQL 18 e Redis ainda não foram entregues.
 
 Validar:
 
@@ -174,15 +180,15 @@ Não implementar nesta fase:
 
 ## Definition of Done
 
-- [ ] versões alvo confirmadas;
-- [ ] aplicação executando na stack atualizada;
-- [x] testes mínimos de regressão passando no legado (revalidar após o upgrade);
-- [ ] PostgreSQL funcionando com migrations e seeders;
+- [ ] todas as versões alvo confirmadas (Laravel 13/PHP 8.5 confirmados; banco e Redis pendentes);
+- [x] aplicação executando em Laravel 13/PHP 8.5 (PostgreSQL ainda 14);
+- [x] testes de regressão passando no legado e revalidados após o upgrade;
+- [ ] PostgreSQL 18 funcionando com migrations e seeders;
 - [ ] Redis disponível no ambiente;
-- [ ] `docker compose up` sobe o ambiente;
-- [ ] novo clone consegue ser configurado pelo README;
+- [ ] `docker compose up` sobe o ambiente completo (incluindo PostgreSQL 18 e Redis);
+- [ ] novo clone consegue configurar a stack completa pelo README (Laravel/PHP já reproduzidos);
 - [ ] CI executa testes automaticamente;
-- [ ] dependências críticas atualizadas;
+- [x] dependências críticas da aplicação atualizadas;
 - [ ] soluções de fases futuras não foram antecipadas;
 - [ ] principais decisões e riscos documentados.
 
