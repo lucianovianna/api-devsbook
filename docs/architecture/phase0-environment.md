@@ -2,6 +2,18 @@
 
 Data: 2026-11-01. Escopo: última entrega local da Fase 0.
 
+## Inicialização manual
+
+Os três serviços têm `restart: on-failure` explícito no `compose.yaml`.
+O Docker pode iniciar com o WSL, mas essa política não inicia os containers
+do Devsbook junto com o daemon. Se o processo encerrar com código de erro,
+o Docker tenta reiniciar o container, sem limite de tentativas configurado.
+Essa política não reinicia processos travados nem containers apenas `unhealthy`.
+Para ligar o ambiente, execute
+`./bin/dev up -d`; para parar, `./bin/dev stop`.
+Fechar o terminal mantém os containers em execução quando iniciados com `-d`.
+Parar os containers preserva o volume do PostgreSQL.
+
 ## Problema e decisões
 
 Após modernizar Laravel/PHP e validar PostgreSQL 18, faltavam um Redis

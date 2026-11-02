@@ -2,6 +2,7 @@ name: devsbook
 
 services:
   app:
+    restart: on-failure
     build:
       context: ./docker/php85
     user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
@@ -31,6 +32,7 @@ services:
     command: ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000", "--no-reload"]
 
   postgres:
+    restart: on-failure
     image: postgres:18-bookworm@sha256:5c4783a8cc3f0074912164f94dfa1be4e043438f0f707cf968d7af9a0d31a2c8
     environment:
       POSTGRES_DB: devsbook
@@ -49,6 +51,7 @@ services:
       start_period: 10s
 
   redis:
+    restart: on-failure
     image: redis:8-alpine@sha256:21090af93f8324db2f0f0f4f38a7c60369d47d917e000c3423d89d2ae2883537
     command: ["redis-server", "--save", "", "--appendonly", "no"]
     ports:
