@@ -37,7 +37,7 @@ services:
       POSTGRES_USER: devsbook
       POSTGRES_PASSWORD: devsbook-local
     ports:
-      - "127.0.0.1:${DB_PORT_FORWARD:-5434}:5432"
+      - "127.0.0.1:${DB_PORT_FORWARD:-15432}:5432"
     volumes:
       - postgres18:/var/lib/postgresql
       - ./docker/php85/init-test-database.sql:/docker-entrypoint-initdb.d/01-test-database.sql:ro
@@ -51,6 +51,8 @@ services:
   redis:
     image: redis:8-alpine@sha256:21090af93f8324db2f0f0f4f38a7c60369d47d917e000c3423d89d2ae2883537
     command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "127.0.0.1:${REDIS_PORT_FORWARD:-16379}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s

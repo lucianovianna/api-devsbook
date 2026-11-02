@@ -12,8 +12,8 @@ peças e mantém os contratos validados pelas etapas anteriores.
 Redis resolve, nesta fase, a preparação e verificação de conectividade do
 ambiente que será usado nos estudos posteriores. Não é uma solução de cache
 de domínio ainda. Sessão continua em arquivo, cache em arquivo e fila síncrona.
-O serviço fica apenas na rede do Compose, sem porta publicada e sem dados
-persistentes. Não há worker ou processamento assíncrono.
+O serviço é acessível na rede do Compose e pelo host em `127.0.0.1:16379`,
+sem dados persistentes. Não há worker ou processamento assíncrono.
 
 Foi escolhido Predis como cliente PHP para executar a conexão no mesmo runtime
 sem acrescentar uma extensão nativa. A alternativa era compilar PhpRedis na
@@ -41,8 +41,10 @@ reavaliado se um problema concreto exigir isso.
 - `README.md`: instalação, dados de demonstração, verificações e operação.
 
 O volume PostgreSQL 18 e os dois volumes anteriores permanecem preservados.
-O Redis não publica porta no host e usa `--save "" --appendonly no` porque
-não armazena estado da aplicação nesta fase.
+PostgreSQL é publicado em `127.0.0.1:15432` e Redis em `127.0.0.1:16379`.
+As portas podem ser alteradas com `DB_PORT_FORWARD` e `REDIS_PORT_FORWARD`.
+Na rede interna, continuam `postgres:5432` e `redis:6379`. Redis usa
+`--save "" --appendonly no` porque não armazena estado da aplicação nesta fase.
 
 ## Seed pequeno
 

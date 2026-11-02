@@ -88,17 +88,19 @@ As respostas esperadas são `{"pong":true}` e `PONG`.
 | Serviço | Acesso |
 | --- | --- |
 | API | `http://localhost:8000` |
-| PostgreSQL | `127.0.0.1:5434`, banco `devsbook` |
-| Redis | `redis:6379`, acessível apenas na rede do Compose |
+| PostgreSQL | `127.0.0.1:15432`, banco `devsbook` |
+| Redis | `127.0.0.1:16379` |
 
 O PostgreSQL local usa usuário `devsbook` e senha `devsbook-local`, exclusivos
 desse ambiente de desenvolvimento. O Compose fornece a conexão aos containers.
-Redis usa Predis e não tem persistência configurada.
+Entre os containers, a aplicação usa `postgres:5432` e `redis:6379`.
+Redis usa Predis e não tem persistência configurada. As portas publicadas
+ficam restritas ao acesso local (`127.0.0.1`).
 
 Se as portas estiverem ocupadas:
 
 ```bash
-APP_PORT=8001 DB_PORT_FORWARD=5435 ./bin/dev up -d --wait
+APP_PORT=8001 DB_PORT_FORWARD=15433 REDIS_PORT_FORWARD=16380 ./bin/dev up -d --wait
 ```
 
 Depois da configuração inicial, `./bin/dev up -d --wait` sobe o ambiente.
