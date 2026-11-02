@@ -20,6 +20,8 @@
     <php>
         <server name="APP_ENV" value="testing"/>
         <server name="BCRYPT_ROUNDS" value="4"/>
+        <server name="JWT_SECRET" value="devsbook-regression-tests-only-not-for-production" force="true"/>
+        <server name="JWT_BLACKLIST_ENABLED" value="true" force="true"/>
         <env name="DB_DATABASE" value="devsbook_test" force="true"/>
         <server name="DB_DATABASE" value="devsbook_test" force="true"/>
         <server name="CACHE_DRIVER" value="array"/>

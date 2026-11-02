@@ -17,7 +17,7 @@ O projeto foi criado originalmente em 2021 e atualmente possui uma base semelhan
 - `QUEUE_CONNECTION=sync`;
 - `SESSION_DRIVER=file`;
 - armazenamento local de mídia em `public/media`;
-- testes padrão/minimais do Laravel;
+- suíte mínima de regressão no PostgreSQL para os fluxos prioritários, além dos testes padrão do Laravel;
 - autenticação via JWT;
 - endpoints de autenticação, usuário, feed, posts, likes, comentários, follow/unfollow, busca e upload de mídia.
 
@@ -78,6 +78,15 @@ Prioridade:
 6. follow/unfollow.
 
 Não é necessário atingir alta cobertura nesta fase.
+
+Status: suíte mínima implementada e validada no legado. A cobertura e os
+limites estão em `docs/architecture/legacy-regression-tests.md`. Reexecutar
+essa suíte a cada etapa da migração.
+
+A cobertura foi ampliada para uploads, atualização de perfil/senha,
+comentários, busca, fotos e listagem de relações. Dois problemas preexistentes
+estão reproduzidos como testes incompletos e registrados em
+`docs/architecture/legacy-known-issues.md`; não foram corrigidos nesta etapa.
 
 ### 3. Upgrade Laravel/PHP
 
@@ -167,7 +176,7 @@ Não implementar nesta fase:
 
 - [ ] versões alvo confirmadas;
 - [ ] aplicação executando na stack atualizada;
-- [ ] testes mínimos de regressão passando;
+- [x] testes mínimos de regressão passando no legado (revalidar após o upgrade);
 - [ ] PostgreSQL funcionando com migrations e seeders;
 - [ ] Redis disponível no ambiente;
 - [ ] `docker compose up` sobe o ambiente;

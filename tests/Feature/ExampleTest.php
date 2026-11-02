@@ -18,4 +18,9 @@ class ExampleTest extends TestCase
 
         $response->assertStatus(200);
     }
+
+    public function test_api_ping_is_public()
+    {
+        $this->getJson('/api/ping')->assertOk()->assertExactJson(['pong' => true]);
+    }
 }

@@ -11,7 +11,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements JWTSubject
 {
-    use Notifiable;
+    use HasFactory, Notifiable;
 
     public $timestamps = false;
 

@@ -87,13 +87,14 @@ Este runtime antigo é temporário e destinado à referência local do legado.
 Ele não é a stack alvo nem uma configuração de produção. As vulnerabilidades
 das dependências antigas ainda precisam ser tratadas na modernização.
 
-Não houve alteração em controllers, models, migrations ou dependências. O seed
-atual continua vazio e a factory existente ainda precisa ser ajustada na etapa
-dos testes de regressão. Redis não é necessário para executar o comportamento
+Na preparação do ambiente não houve alteração em controllers, models, migrations
+ou dependências. O seed atual continua vazio. A factory e o trait `HasFactory`
+do model foram posteriormente ajustados na etapa dos
+[testes de regressão](legacy-regression-tests.md). Redis não é necessário para executar o comportamento
 atual e será disponibilizado na entrega do ambiente moderno.
 
-Não há benchmark nesta entrega. Os testes de exemplo existentes não demonstram
-cobertura dos fluxos de autenticação, feed ou interações.
+Não há benchmark nesta entrega. Na preparação inicial do ambiente havia apenas
+testes de exemplo, que não cobriam autenticação, feed ou interações.
 
 ## Validação realizada
 
@@ -113,6 +114,6 @@ cobertura dos fluxos de autenticação, feed ou interações.
   geração de chaves, migrations, testes e ping passaram. O ambiente de
   verificação foi removido; o ambiente principal permaneceu disponível.
 
-As verificações temporárias não foram adicionadas como suíte de regressão.
-A próxima etapa é criar testes persistentes dos endpoints, começando por
-autenticação e cadastro, e ajustar as factories necessárias.
+As verificações temporárias dessa entrega não foram adicionadas à suíte.
+Na etapa seguinte foram criados testes persistentes dos endpoints e ajustada a
+factory de usuário; ver [testes de regressão](legacy-regression-tests.md).

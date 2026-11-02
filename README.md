@@ -34,6 +34,15 @@ curl http://localhost:8000/api/ping
 ./bin/legacy exec app composer check-platform-reqs
 ```
 
+A suíte mínima de regressão usa JWT real e o banco `devsbook_test`. Ela cobre
+autenticação, cadastro, leitura/edição de perfil e senha, feed, uploads, fotos,
+comentários, busca, likes e relações. Dois problemas preexistentes estão
+sinalizados como testes incompletos e registrados em
+[legacy-known-issues.md](docs/architecture/legacy-known-issues.md). O banco de testes
+é recriado na primeira execução de um teste de API e cada cenário usa uma
+transação revertida ao terminar. Detalhes e limites estão em
+[docs/architecture/legacy-regression-tests.md](docs/architecture/legacy-regression-tests.md).
+
 O Compose fixa a conexão da aplicação no banco local `devsbook`, com usuário
 `devsbook` e senha `devsbook-local`. O PostgreSQL é publicado somente em
 `127.0.0.1:5433`. Essas credenciais são exclusivas deste ambiente de desenvolvimento.
@@ -56,8 +65,8 @@ LEGACY_APP_PORT=8001 LEGACY_DB_PORT=5434 ./bin/legacy up -d
 Para encerrar, execute `./bin/legacy down`; os dados
 permanecem no volume. A mídia permanece no diretório `public/media` do checkout.
 
-Este ambiente é temporário e destinado à execução local do legado. Redis, o
-upgrade da stack e os testes dos endpoints entram nas próximas entregas.
+Este ambiente é temporário e destinado à execução local do legado. Redis e o
+upgrade da stack entram nas próximas entregas.
 Veja as decisões e limitações em
 [docs/architecture/legacy-environment.md](docs/architecture/legacy-environment.md).
 
